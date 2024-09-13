@@ -1,0 +1,32 @@
+{
+    "name": "itsmg/rester",
+    "description": "Laravel package for making rest-apis calls with elegant syntax",
+    "version": "1.0.0",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Itsmg\\Rester\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "BalaMurugan",
+            "email": "balaneutro@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Itsmg\\Rester\\ResterServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=7.4",
+        "illuminate/support": ">=8.0",
+        "illuminate/console": ">=8.0",
+        "guzzlehttp/guzzle": ">=7.0.1",
+        "ext-json": "*"
+    }
+}
