@@ -9,6 +9,12 @@ Furthermore, the package supports grouping related API calls under a common pare
 
 In this documentation, we'll demonstrate how to use **RESTER** with the example API, **PaynowPaymentGateway**, focusing on the `PayNowCreateOrder` class. With simple and elegant syntax, you can abstract API calls into manageable, reusable objects.
 
+To install the RESTER package, use Composer:
+
+```bash
+composer require itsmg/rester
+```
+
 ---
 
 ## 1. Making an API Call with Minimal Code
