@@ -6,15 +6,15 @@ class Rester
 {
     use BaseFetchDna, AssignApiDataPoints;
 
-    protected string $baseUri = '';
+    protected string $baseUrl = '';
 
     protected array $requestHeaders = [];
 
-    protected array $requestedData = [];
+    protected array $payloads = [];
 
-    protected string $finalEndPoint = '';
+    protected string $endPoint = '';
 
-    protected string $defaultApiRoute = '';
+    protected string $apiRoute = '';
 
     protected $responseContent;
 
@@ -32,7 +32,7 @@ class Rester
 
     protected array $loggable = [];
 
-    protected $requestBeforeIntercept;
+    protected $payloadBeforeIntercept;
 
     protected $responseBeforeIntercept;
 
@@ -40,12 +40,16 @@ class Rester
 
     protected $responseHeaderBeforeIntercept;
 
+    protected bool $isEndPointOverWrite = false;
+
+    protected string $appendEndPoint = '';
+
     public function getContent()
     {
         return $this->responseContent;
     }
 
-    public function getContentJsonToArray()
+    public function jsonToArray()
     {
         return json_decode($this->responseContent, true);
     }
@@ -69,4 +73,48 @@ class Rester
         ];
     }
 
+    public static function fetch(array $payload = [], array $headers = []): array
+    {
+        return (new static())
+            ->addPayloads($payload)
+            ->addHeaders($headers)
+            ->send()
+            ->get();
+    }
+
+    public static function fetchContent(array $payload = [], array $headers = []): array
+    {
+        return (new static())
+            ->addPayloads($payload)
+            ->addHeaders($headers)
+            ->send()
+            ->getContent();
+    }
+
+    public static function fetchStatusCode(array $payload = [], array $headers = []): array
+    {
+        return (new static())
+            ->addPayloads($payload)
+            ->addHeaders($headers)
+            ->send()
+            ->getContent();
+    }
+
+    public static function fetchJsonToArray(array $payload = [], array $headers = []): array
+    {
+        return (new static())
+            ->addPayloads($payload)
+            ->addHeaders($headers)
+            ->send()
+            ->jsonToArray();
+    }
+
+    public static function fetchResponseHeaders(array $payload = [], array $headers = []): array
+    {
+        return (new static())
+            ->addPayloads($payload)
+            ->addHeaders($headers)
+            ->send()
+            ->getResponseHeaders();
+    }
 }
