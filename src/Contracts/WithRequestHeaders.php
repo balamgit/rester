@@ -2,7 +2,7 @@
 
 namespace Itsmg\Rester\Contracts;
 
-interface WithDefaultRequestHeaders
+interface WithRequestHeaders
 {
     public function defaultRequestHeaders(): array;
 }
