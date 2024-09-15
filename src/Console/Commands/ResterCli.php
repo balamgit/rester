@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\File;
 
 class ResterCli extends Command
 {
-    protected $signature = 'rester:create  {--group= : The API group} {--api-name= : The API class name}';
+    protected $signature = 'rester:create  {--group= : The API group} {--api-name= : The API class name} {--base-class= : is based class needed}';
 
     protected $description = 'Generate a new rester api group class from a template';
 
@@ -23,15 +23,19 @@ class ResterCli extends Command
     {
         $groupName = $this->option('group');
         $className = $this->option('api-name');
+        $base = $this->option('base') ?? 'no';
 
         if (empty($groupName) || empty($className)) {
             $this->info($this->help);
             return;
         }
 
-        $groupClassName = $groupName.'Base';
-        $folderPath = app_path('Rester/'.$groupName);
+        if(!empty($base) && !in_array($base, ['yes', 'no'])) {
+            $this->info($this->help);
+        }
 
+
+        $folderPath = app_path('Rester/'.$groupName);
         if (!File::exists($folderPath)) {
             File::makeDirectory($folderPath, 0755, true);
             $this->info("Created directory: {$folderPath}");
@@ -39,6 +43,12 @@ class ResterCli extends Command
             $this->info("Directory already exists: {$folderPath}");
         }
 
+        if ($base == 'no') {
+            $this->defineFilePath($folderPath, $className, 'getStandAloneTemplate', $groupName);
+            return;
+        }
+
+        $groupClassName = $groupName.'Base';
         $this->defineFilePath($folderPath, $className, 'getTemplate', $groupName);
         $this->defineFilePath($folderPath, $groupClassName, 'getTemplateBase', $groupName);
     }
@@ -49,22 +59,43 @@ class ResterCli extends Command
 Generate a new API class inside a specific group folder.
 
 Usage:
-    php artisan rester:create --group=<group> --api-name=<class>
+    php artisan rester:create --group=<group> --api-name=<class> --base-class=<yes or no>
 
 Arguments:
     --group     The folder group under app/Rester where the API base class should be created.
     --api-name  The name of the API class file to be generated inside app/Rester.
+    --base-class By default it's 'no', 'Yes' which creates a base class for API groups.
 
 Examples:
     php artisan rester:create --group=ApiGroup --api-name=MyApiClass
         - This will create following files 
-           app/Rester/ApiGroup/MyApiBase.php.
+           app/Rester/ApiGroup/MyApiBase.php (Optional)
            app/Rester/ApiGroup/MyApiClass.php.
 
 If the group folder doesn't exist, it will be created automatically.
 EOT;
     }
 
+    private function getStandAloneTemplate($className, $group): string
+    {
+        $namespace = "App\Rester\\".$group;
+        return <<<EOT
+        <?php
+
+        namespace {$namespace};
+
+        use Itsmg\Rester\Rester;
+        use Itsmg\Rester\Contracts\HasFinalEndPoint;
+
+        class {$className} extends Rester implements HasFinalEndPoint
+        {
+            public function setFinalEndPoint(): string
+            {
+                // TODO: Implement final endpoint.
+            }
+        }
+        EOT;
+    }
     private function getTemplate($className, $group): string
     {
         $groupClassName = $group.'Base';
@@ -90,11 +121,11 @@ EOT;
         namespace {$namespace};
 
         use Itsmg\Rester\Rester;
-        use Itsmg\Rester\Contracts\WithDefaultBaseUri;
+        use Itsmg\Rester\Contracts\WithBaseUrl;
 
-        class {$className} extends Rester implements WithDefaultBaseUri
+        class {$className} extends Rester implements WithBaseUrl
         {
-            public function defaultBaseUri(): string
+            public function setBaseUrl(): string
             {
                 // TODO: Implement defaultBaseUri() method.
             }

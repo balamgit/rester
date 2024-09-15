@@ -9,29 +9,39 @@ use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\DB;
 use Itsmg\Rester\Contracts\AccessLogInterceptor;
-use Itsmg\Rester\Contracts\RequestDataInterceptor;
+use Itsmg\Rester\Contracts\HasFinalEndPoint;
+use Itsmg\Rester\Contracts\PayloadInterceptor;
 use Itsmg\Rester\Contracts\RequestHeaderInterceptor;
 use Itsmg\Rester\Contracts\ResponseContentInterceptor;
 use Itsmg\Rester\Contracts\ResponseHeaderInterceptor;
-use Itsmg\Rester\Contracts\WithDefaultApiRoute;
-use Itsmg\Rester\Contracts\WithDefaultBaseUri;
-use Itsmg\Rester\Contracts\WithDefaultRequestHeaders;
-use Itsmg\Rester\Contracts\WithStaticRequestData;
+use Itsmg\Rester\Contracts\WithApiRoute;
+use Itsmg\Rester\Contracts\WithBaseUrl;
+use Itsmg\Rester\Contracts\WithRequestHeaders;
+use Itsmg\Rester\Contracts\WithDefaultPayload;
 use Itsmg\Rester\Exceptions\ResterApiException;
 
 trait BaseFetchDna
 {
     public function assignEndpoint()
     {
-        if ($this instanceof WithDefaultBaseUri) {
-            $this->baseUri = $this->defaultBaseUri();
+        if ($this->isEndPointOverWrite){
+            return;
         }
 
-        if ($this instanceof WithDefaultApiRoute) {
-            $this->defaultApiRoute = $this->defaultApiRoute();
+        if ($this instanceof HasFinalEndPoint) {
+            $this->endPoint = $this->setFinalEndPoint().$this->appendEndPoint;
+            return;
         }
 
-        $this->finalEndPoint = $this->baseUri.$this->defaultApiRoute;
+        if ($this instanceof WithBaseUrl) {
+            $this->baseUrl = $this->setBaseUrl();
+        }
+
+        if ($this instanceof WithApiRoute) {
+            $this->apiRoute = $this->setApiRoute();
+        }
+
+        $this->endPoint = $this->baseUrl.$this->apiRoute.$this->appendEndPoint;
     }
 
     public function send(): self
@@ -52,12 +62,12 @@ trait BaseFetchDna
      */
     protected function processApiRequest(): array
     {
-        if ($this instanceof WithDefaultRequestHeaders) {
+        if ($this instanceof WithRequestHeaders) {
             $this->requestHeaders = array_merge($this->defaultRequestHeaders(), $this->requestHeaders);
         }
 
-        if ($this instanceof WithStaticRequestData) {
-            $this->requestedData = array_merge($this->staticRequestData(), $this->requestedData);
+        if ($this instanceof WithDefaultPayload) {
+            $this->payloads = array_merge($this->defaultPayload(), $this->payloads);
         }
 
         $this->requestHeaderBeforeIntercept = $this->requestHeaders;
@@ -65,27 +75,27 @@ trait BaseFetchDna
             $this->requestHeaders = $this->interceptRequestHeader($this->requestHeaders);
         }
 
-        $this->requestBeforeIntercept = $this->requestedData;
-        if ($this instanceof RequestDataInterceptor) {
-            $this->requestedData = $this->interceptRequestData($this->requestedData);
+        $this->payloadBeforeIntercept = $this->payloads;
+        if ($this instanceof PayloadInterceptor) {
+            $this->payloads = $this->interceptPayload($this->payloads);
         }
 
         $data = [
            'headers' => $this->requestHeaders,
-           'json' => $this->requestedData,
+           'json' => $this->payloads,
         ];
 
-        if (empty($this->finalEndPoint)) {
+        if (empty($this->endPoint)) {
             throw new ResterApiException('Endpoint not set');
         }
 
-        return $this->curlInit($this->finalEndPoint, $data, $this->method);
+        return $this->curlInit($this->endPoint, $data, $this->method);
     }
 
     /**
      * @throws ResterApiException
      */
-    public function curlInit(string $endpoint, array $data, $method = 'post'): array
+    protected function curlInit(string $endpoint, array $data, $method = 'post'): array
     {
         $responseHeader = '';
         $method = strtolower($method);
@@ -103,11 +113,8 @@ trait BaseFetchDna
         } catch (ClientException $c) {
             $content = $c->getResponse()->getReasonPhrase() ?? 'Rester Client exception.';
             $statusCode = $c->getResponse()->getStatusCode() ?? 400;
-        } catch (GuzzleException $e) {
-            $content = $e->getMessage();
-            $statusCode = $e->getCode() ?? 500;
-        } catch (Exception $e) {
-            $content = 'Rester API Unknown error ';
+        } catch (GuzzleException | Exception $e) {
+            $content = $e->getMessage() ?? 'Rester API unknown error.';
             $statusCode = $e->getCode() ?? 500;
         }
 
@@ -125,7 +132,7 @@ trait BaseFetchDna
         }
 
         $this->loggable = [
-            'uri' => $this->finalEndPoint,
+            'uri' => $this->endPoint,
             'status_code' => $statusCode,
             'request_at' => $time['start'],
             'response_at' => $time['stop'],
