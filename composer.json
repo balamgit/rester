@@ -1,7 +1,6 @@
 {
     "name": "itsmg/rester",
     "description": "Laravel package for making rest-apis calls with elegant syntax",
-    "version": "1.0.0",
     "type": "library",
     "autoload": {
         "psr-4": {
