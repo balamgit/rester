@@ -39,7 +39,24 @@ Developers should focus on business logic while **RESTER** handles the API inter
 php artisan rester:create --group=PaynowPaymentGateway --api-name=PayNowCreateOrder
 ```
 
-This command generates a new `PayNowCreateOrder` class under the `app/Rester/PaynowPaymentGateway/` directory (skipping the group folder creation if it already exists).
+This command generates a new `PaynowPaymentGatewayBase` & `PayNowCreateOrder` classes under the `app/Rester/PaynowPaymentGateway/` directory (skipping the group folder creation if it already exists).
+
+### Example Base parent Class: PaynowPaymentGatewayBase
+
+```php
+namespace App\Rester\PaynowPaymentGateway;
+
+use Itsmg\Rester\Rester;
+use Itsmg\Rester\Contracts\WithBaseUrl;
+
+class PaynowPaymentGatewayBase extends Rester implements WithBaseUrl
+{
+    public function setBaseUrl(): string
+    {
+        return 'https://example-paynow.com/api/v1';
+    }
+}
+```
 
 ### Example Class: PayNowCreateOrder
 
@@ -47,13 +64,13 @@ This command generates a new `PayNowCreateOrder` class under the `app/Rester/Pay
 namespace App\Rester\PaynowPaymentGateway;
 
 use Itsmg\Rester\Rester;
-use Itsmg\Rester\Contracts\HasFinalEndPoint;
+use Itsmg\Rester\Contracts\WithApiRoute;
 
-class PayNowCreateOrder extends Rester implements HasFinalEndPoint
+class PayNowCreateOrder extends PaynowPaymentGatewayBase implements WithApiRoute
 {
-    public function setFinalEndPoint(): string
+    public function setApiRoute(): string
     {
-        return 'https://example-paynow.com/api/v1/create/order';
+        return '/create/order';
     }
 }
 ```
@@ -65,11 +82,11 @@ class PayNowCreateOrder extends Rester implements HasFinalEndPoint
 You can assign default payloads for every request. For instance, when creating an order, you might need to pass amount, currency & userid:
 
 ```php
-class PayNowCreateOrder extends Rester implements HasFinalEndPoint, WithDefaultPayload
+class PayNowCreateOrder extends PaynowPaymentGatewayBase implements WithApiRoute, WithDefaultPayload
 {
-    public function setFinalEndPoint(): string
+    public function setApiRoute(): string
     {
-        return 'https://example-paynow.com/api/v1/create/order';
+        return '/create/order';
     }
 
     public function defaultPayload(): array
@@ -92,11 +109,11 @@ Now, every time you call `PayNowCreateOrder`, it automatically sends the default
 Headers, like authentication tokens, can be set by default, ensuring they are sent with every request:
 
 ```php
-class PayNowCreateOrder extends Rester implements HasFinalEndPoint, WithRequestHeaders
+class PayNowCreateOrder extends PaynowPaymentGatewayBase implements WithApiRoute, WithRequestHeaders
 {
-    public function setFinalEndPoint(): string
+    public function setApiRoute(): string
     {
-        return 'https://example-paynow.com/api/v1/create/order';
+        return '/create/order';
     }
 
     public function defaultRequestHeaders(): array
@@ -159,11 +176,11 @@ RESTER offers a powerful feature to intercept payloads or headers before the API
 ### Example: Intercepting Payload
 
 ```php
-class PayNowCreateOrder extends Rester implements HasFinalEndPoint, PayloadInterceptor
+class PayNowCreateOrder extends PaynowPaymentGatewayBase implements WithApiRoute, PayloadInterceptor
 {
-    public function setFinalEndPoint(): string
+    public function setApiRoute(): string
     {
-        return 'https://example-paynow.com/api/v1/create/order';
+        return '/create/order';
     }
 
     public function interceptPayload($payload): array
@@ -186,13 +203,13 @@ In this example, you can validate and encrypt the payload before it is sent.
 RESTER includes API access logging. You can enable or disable it using the `$log` property and specify what details should be logged.
 
 ```php
-class PayNowCreateOrder extends Rester implements HasFinalEndPoint
+class PayNowCreateOrder extends PaynowPaymentGatewayBase implements WithApiRoute
 {
     protected bool $log = true;
 
-    public function setFinalEndPoint(): string
+    public function setApiRoute(): string
     {
-        return 'https://example-paynow.com/api/v1/create/order';
+        return '/create/order';
     }
 }
 ```
