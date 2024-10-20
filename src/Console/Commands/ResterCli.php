@@ -23,7 +23,7 @@ class ResterCli extends Command
     {
         $groupName = $this->option('group');
         $className = $this->option('api-name');
-        $base = $this->option('base') ?? 'no';
+        $base = $this->option('base') ?? 'yes';
 
         if (empty($groupName) || empty($className)) {
             $this->info($this->help);
@@ -62,9 +62,9 @@ Usage:
     php artisan rester:create --group=<group> --api-name=<class> --base-class=<yes or no>
 
 Arguments:
-    --group     The folder group under app/Rester where the API base class should be created.
-    --api-name  The name of the API class file to be generated inside app/Rester.
-    --base-class By default it's 'no', 'Yes' which creates a base class for API groups.
+    --group      The folder group under app/Rester where the API base class should be created.
+    --api-name   The name of the API class file to be generated inside app/Rester.
+    --base-class By default it's 'yes', 'no' which ignores creating a base class for API groups.
 
 Examples:
     php artisan rester:create --group=ApiGroup --api-name=MyApiClass

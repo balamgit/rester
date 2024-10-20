@@ -73,7 +73,7 @@ class Rester
         ];
     }
 
-    public static function fetch(array $payload = [], array $headers = []): array
+    public static function fetch(array $payload = [], array $headers = [])
     {
         return (new static())
             ->addPayloads($payload)
@@ -82,7 +82,7 @@ class Rester
             ->get();
     }
 
-    public static function fetchContent(array $payload = [], array $headers = []): array
+    public static function fetchContent(array $payload = [], array $headers = [])
     {
         return (new static())
             ->addPayloads($payload)
@@ -91,7 +91,7 @@ class Rester
             ->getContent();
     }
 
-    public static function fetchStatusCode(array $payload = [], array $headers = []): array
+    public static function fetchStatusCode(array $payload = [], array $headers = [])
     {
         return (new static())
             ->addPayloads($payload)
@@ -100,7 +100,7 @@ class Rester
             ->getContent();
     }
 
-    public static function fetchJsonToArray(array $payload = [], array $headers = []): array
+    public static function fetchJsonToArray(array $payload = [], array $headers = [])
     {
         return (new static())
             ->addPayloads($payload)
@@ -109,7 +109,7 @@ class Rester
             ->jsonToArray();
     }
 
-    public static function fetchResponseHeaders(array $payload = [], array $headers = []): array
+    public static function fetchResponseHeaders(array $payload = [], array $headers = [])
     {
         return (new static())
             ->addPayloads($payload)
