@@ -16,6 +16,7 @@ use Itsmg\Rester\Contracts\ResponseContentInterceptor;
 use Itsmg\Rester\Contracts\ResponseHeaderInterceptor;
 use Itsmg\Rester\Contracts\WithApiRoute;
 use Itsmg\Rester\Contracts\WithBaseUrl;
+use Itsmg\Rester\Contracts\WithLogStrategy;
 use Itsmg\Rester\Contracts\WithRequestHeaders;
 use Itsmg\Rester\Contracts\WithDefaultPayload;
 use Itsmg\Rester\Exceptions\ResterApiException;
@@ -100,7 +101,7 @@ trait BaseFetchDna
         $responseHeader = '';
         $method = strtolower($method);
 
-        if (! in_array($method, ['post', 'put', 'delete','get'])) {
+        if (! in_array($method, ['post', 'put', 'delete','get', 'patch'])) {
             throw new ResterApiException('Unknown HTTP method ' . $method);
         }
 
@@ -131,6 +132,14 @@ trait BaseFetchDna
             return;
         }
 
+        if ($this instanceof WithLogStrategy) {
+            $this->logStrategy = $this->setLogStrategy();
+        }
+
+        if (! ($this instanceof WithLogStrategy) ) {
+            $this->logStrategy = new FileLog('logs/rester_api_logs.log');;
+        }
+
         $this->loggable = [
             'uri' => $this->endPoint,
             'status_code' => $statusCode,
@@ -142,9 +151,7 @@ trait BaseFetchDna
             $this->loggable = array_merge($this->interceptAccessLog(), $this->loggable);
         }
 
-        DB::connection($this->logConnection)
-            ->table($this->logCollection)
-            ->insert($this->loggable);
+        $this->logStrategy->log($this->loggable);
     }
 
     /**

@@ -2,6 +2,8 @@
 
 namespace Itsmg\Rester;
 
+use Itsmg\Rester\Contracts\LogStrategy;
+
 class Rester
 {
     use BaseFetchDna, AssignApiDataPoints;
@@ -25,6 +27,8 @@ class Rester
     protected string $method = 'post';
 
     protected bool $log = false;
+
+    protected ?LogStrategy $logStrategy = null;
 
     protected string $logConnection = 'default';
 
@@ -73,46 +77,52 @@ class Rester
         ];
     }
 
-    public static function fetch(array $payload = [], array $headers = [])
+    public static function __callStatic($method, $arguments)
     {
-        return (new static())
-            ->addPayloads($payload)
+        $instance = new static();
+
+        if (method_exists($instance, $method)) {
+            return $instance->{$method}(...$arguments);
+        }
+
+        throw new \BadMethodCallException("Method {$method} does not exist.");
+    }
+
+    public function fetch(array $payload = [], array $headers = []): array
+    {
+        return $this->addPayloads($payload)
             ->addHeaders($headers)
             ->send()
             ->get();
     }
 
-    public static function fetchContent(array $payload = [], array $headers = [])
+    public function fetchContent(array $payload = [], array $headers = [])
     {
-        return (new static())
-            ->addPayloads($payload)
+        return $this->addPayloads($payload)
             ->addHeaders($headers)
             ->send()
             ->getContent();
     }
 
-    public static function fetchStatusCode(array $payload = [], array $headers = [])
+    public function fetchStatusCode(array $payload = [], array $headers = [])
     {
-        return (new static())
-            ->addPayloads($payload)
+        return $this->addPayloads($payload)
             ->addHeaders($headers)
             ->send()
             ->getContent();
     }
 
-    public static function fetchJsonToArray(array $payload = [], array $headers = [])
+    public function fetchJsonToArray(array $payload = [], array $headers = [])
     {
-        return (new static())
-            ->addPayloads($payload)
+        return $this->addPayloads($payload)
             ->addHeaders($headers)
             ->send()
             ->jsonToArray();
     }
 
-    public static function fetchResponseHeaders(array $payload = [], array $headers = [])
+    public function fetchResponseHeaders(array $payload = [], array $headers = [])
     {
-        return (new static())
-            ->addPayloads($payload)
+        return $this->addPayloads($payload)
             ->addHeaders($headers)
             ->send()
             ->getResponseHeaders();

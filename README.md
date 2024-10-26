@@ -137,8 +137,7 @@ You can easily customize payloads or headers dynamically during runtime. Here’
 ### Dynamically Adding Payloads
 
 ```php
-$response = (new PayNowCreateOrder())
-           ->addPayloads(['secret-key' => 'xxxxxxx'])
+$response = PayNowCreateOrder::addPayloads(['secret-key' => 'xxxxxxx'])
            ->send()
            ->get();
 ```
@@ -146,8 +145,7 @@ $response = (new PayNowCreateOrder())
 ### Dynamically Adding Headers
 
 ```php
-$response = (new PayNowCreateOrder())
-           ->addHeaders(['Content-Type' => 'application/json'])
+$response = PayNowCreateOrder::addHeaders(['Content-Type' => 'application/json'])
            ->send()
            ->get();
 ```
@@ -164,6 +162,8 @@ This flexibility allows you to pass dynamic data and headers depending on your a
 - **`appendEndPoint`**: Append additional segments to the endpoint.
 - **`assignBaseUri`**: Set a base URI for all API calls.
 - **`assignApiRoute`**: Define specific API routes.
+
+- **`setLogStrategy`**: set up your own log strategy by default comes with file log.
 
 These methods give you full control over API URLs as your application's complexity grows.
 
