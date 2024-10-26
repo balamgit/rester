@@ -111,9 +111,6 @@ trait BaseFetchDna
             $responseHeader = $clientResponse->getHeaders();
             $content = $clientResponse->getBody()->getContents();
             $statusCode = $clientResponse->getStatusCode();
-        } catch (ClientException $c) {
-            $content = $c->getResponse()->getReasonPhrase() ?? 'Rester Client exception.';
-            $statusCode = $c->getResponse()->getStatusCode() ?? 400;
         } catch (GuzzleException | Exception $e) {
             $content = $e->getMessage() ?? 'Rester API unknown error.';
             $statusCode = $e->getCode() ?? 500;

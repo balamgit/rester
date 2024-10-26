@@ -30,10 +30,6 @@ class Rester
 
     protected ?LogStrategy $logStrategy = null;
 
-    protected string $logConnection = 'default';
-
-    protected string $logCollection = 'rester_api_logs';
-
     protected array $loggable = [];
 
     protected $payloadBeforeIntercept;
