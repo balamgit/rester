@@ -19,40 +19,6 @@ class ResterCli extends Command
         $this->help = $this->helpTemplate();
     }
 
-    public function handle()
-    {
-        $groupName = $this->option('group');
-        $className = $this->option('api-name');
-        $base = $this->option('base') ?? 'yes';
-
-        if (empty($groupName) || empty($className)) {
-            $this->info($this->help);
-            return;
-        }
-
-        if(!empty($base) && !in_array($base, ['yes', 'no'])) {
-            $this->info($this->help);
-        }
-
-
-        $folderPath = app_path('Rester/'.$groupName);
-        if (!File::exists($folderPath)) {
-            File::makeDirectory($folderPath, 0755, true);
-            $this->info("Created directory: {$folderPath}");
-        } else {
-            $this->info("Directory already exists: {$folderPath}");
-        }
-
-        if ($base == 'no') {
-            $this->defineFilePath($folderPath, $className, 'getStandAloneTemplate', $groupName);
-            return;
-        }
-
-        $groupClassName = $groupName.'Base';
-        $this->defineFilePath($folderPath, $className, 'getTemplate', $groupName);
-        $this->defineFilePath($folderPath, $groupClassName, 'getTemplateBase', $groupName);
-    }
-
     private function helpTemplate(): string
     {
         return <<<EOT
@@ -76,61 +42,38 @@ If the group folder doesn't exist, it will be created automatically.
 EOT;
     }
 
-    private function getStandAloneTemplate($className, $group): string
+    public function handle()
     {
-        $namespace = "App\Rester\\".$group;
-        return <<<EOT
-        <?php
+        $groupName = $this->option('group');
+        $className = $this->option('api-name');
+        $base = $this->option('base') ?? 'yes';
 
-        namespace {$namespace};
-
-        use Itsmg\Rester\Rester;
-        use Itsmg\Rester\Contracts\HasFinalEndPoint;
-
-        class {$className} extends Rester implements HasFinalEndPoint
-        {
-            public function setFinalEndPoint(): string
-            {
-                // TODO: Implement final endpoint.
-            }
+        if (empty($groupName) || empty($className)) {
+            $this->info($this->help);
+            return;
         }
-        EOT;
-    }
-    private function getTemplate($className, $group): string
-    {
-        $groupClassName = $group.'Base';
 
-        $namespace = "App\Rester\\".$group;
-        return <<<EOT
-        <?php
-
-        namespace {$namespace};
-
-        class {$className} extends {$groupClassName}
-        {
+        if (!empty($base) && !in_array($base, ['yes', 'no'])) {
+            $this->info($this->help);
         }
-        EOT;
-    }
 
-    private function getTemplateBase($className, $group): string
-    {
-        $namespace = "App\Rester\\".$group;
-        return <<<EOT
-        <?php
 
-        namespace {$namespace};
-
-        use Itsmg\Rester\Rester;
-        use Itsmg\Rester\Contracts\WithBaseUrl;
-
-        class {$className} extends Rester implements WithBaseUrl
-        {
-            public function setBaseUrl(): string
-            {
-                // TODO: Implement defaultBaseUri() method.
-            }
+        $folderPath = app_path('Rester/' . $groupName);
+        if (!File::exists($folderPath)) {
+            File::makeDirectory($folderPath, 0755, true);
+            $this->info("Created directory: {$folderPath}");
+        } else {
+            $this->info("Directory already exists: {$folderPath}");
         }
-        EOT;
+
+        if ($base == 'no') {
+            $this->defineFilePath($folderPath, $className, 'getStandAloneTemplate', $groupName);
+            return;
+        }
+
+        $groupClassName = $groupName . 'Base';
+        $this->defineFilePath($folderPath, $className, 'getTemplate', $groupName);
+        $this->defineFilePath($folderPath, $groupClassName, 'getTemplateBase', $groupName);
     }
 
     /**
@@ -153,5 +96,63 @@ EOT;
 
         File::put($filePath, $template);
         $this->info("Class {$className} created successfully.");
+    }
+
+    private function getStandAloneTemplate($className, $group): string
+    {
+        $namespace = "App\Rester\\" . $group;
+        return <<<EOT
+        <?php
+
+        namespace {$namespace};
+
+        use Itsmg\Rester\Rester;
+        use Itsmg\Rester\Contracts\HasFinalEndPoint;
+
+        class {$className} extends Rester implements HasFinalEndPoint
+        {
+            public function setFinalEndPoint(): string
+            {
+                // TODO: Implement final endpoint.
+            }
+        }
+        EOT;
+    }
+
+    private function getTemplate($className, $group): string
+    {
+        $groupClassName = $group . 'Base';
+
+        $namespace = "App\Rester\\" . $group;
+        return <<<EOT
+        <?php
+
+        namespace {$namespace};
+
+        class {$className} extends {$groupClassName}
+        {
+        }
+        EOT;
+    }
+
+    private function getTemplateBase($className, $group): string
+    {
+        $namespace = "App\Rester\\" . $group;
+        return <<<EOT
+        <?php
+
+        namespace {$namespace};
+
+        use Itsmg\Rester\Rester;
+        use Itsmg\Rester\Contracts\WithBaseUrl;
+
+        class {$className} extends Rester implements WithBaseUrl
+        {
+            public function setBaseUrl(): string
+            {
+                // TODO: Implement defaultBaseUri() method.
+            }
+        }
+        EOT;
     }
 }

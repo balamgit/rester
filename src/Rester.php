@@ -2,6 +2,7 @@
 
 namespace Itsmg\Rester;
 
+use BadMethodCallException;
 use Itsmg\Rester\Contracts\LogStrategy;
 
 class Rester
@@ -44,24 +45,28 @@ class Rester
 
     protected string $appendEndPoint = '';
 
-    public function getContent()
+    public static function __callStatic($method, $arguments)
     {
-        return $this->responseContent;
-    }
+        $instance = new static();
 
-    public function jsonToArray()
-    {
-        return json_decode($this->responseContent, true);
-    }
+        if (method_exists($instance, $method)) {
+            return $instance->{$method}(...$arguments);
+        }
 
-    public function getResponseHeaders()
-    {
-        return $this->responseHeaders;
+        throw new BadMethodCallException("Method {$method} does not exist.");
     }
 
     public function getStatusCode(): ?int
     {
         return $this->responseStatusCode;
+    }
+
+    public function fetch(array $payload = [], array $headers = []): array
+    {
+        return $this->addPayloads($payload)
+            ->addHeaders($headers)
+            ->send()
+            ->get();
     }
 
     public function get(): array
@@ -73,31 +78,17 @@ class Rester
         ];
     }
 
-    public static function __callStatic($method, $arguments)
-    {
-        $instance = new static();
-
-        if (method_exists($instance, $method)) {
-            return $instance->{$method}(...$arguments);
-        }
-
-        throw new \BadMethodCallException("Method {$method} does not exist.");
-    }
-
-    public function fetch(array $payload = [], array $headers = []): array
-    {
-        return $this->addPayloads($payload)
-            ->addHeaders($headers)
-            ->send()
-            ->get();
-    }
-
     public function fetchContent(array $payload = [], array $headers = [])
     {
         return $this->addPayloads($payload)
             ->addHeaders($headers)
             ->send()
             ->getContent();
+    }
+
+    public function getContent()
+    {
+        return $this->responseContent;
     }
 
     public function fetchStatusCode(array $payload = [], array $headers = [])
@@ -116,11 +107,21 @@ class Rester
             ->jsonToArray();
     }
 
+    public function jsonToArray()
+    {
+        return json_decode($this->responseContent, true);
+    }
+
     public function fetchResponseHeaders(array $payload = [], array $headers = [])
     {
         return $this->addPayloads($payload)
             ->addHeaders($headers)
             ->send()
             ->getResponseHeaders();
+    }
+
+    public function getResponseHeaders()
+    {
+        return $this->responseHeaders;
     }
 }

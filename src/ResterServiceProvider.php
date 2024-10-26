@@ -16,5 +16,7 @@ class ResterServiceProvider extends ServiceProvider
         }
     }
 
-    public function register(){}
+    public function register()
+    {
+    }
 }

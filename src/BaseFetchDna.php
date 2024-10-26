@@ -5,9 +5,7 @@ namespace Itsmg\Rester;
 use Carbon\Carbon;
 use Exception;
 use GuzzleHttp\Client as GuzzleHttp;
-use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
-use Illuminate\Support\Facades\DB;
 use Itsmg\Rester\Contracts\AccessLogInterceptor;
 use Itsmg\Rester\Contracts\HasFinalEndPoint;
 use Itsmg\Rester\Contracts\PayloadInterceptor;
@@ -16,35 +14,13 @@ use Itsmg\Rester\Contracts\ResponseContentInterceptor;
 use Itsmg\Rester\Contracts\ResponseHeaderInterceptor;
 use Itsmg\Rester\Contracts\WithApiRoute;
 use Itsmg\Rester\Contracts\WithBaseUrl;
+use Itsmg\Rester\Contracts\WithDefaultPayload;
 use Itsmg\Rester\Contracts\WithLogStrategy;
 use Itsmg\Rester\Contracts\WithRequestHeaders;
-use Itsmg\Rester\Contracts\WithDefaultPayload;
 use Itsmg\Rester\Exceptions\ResterApiException;
 
 trait BaseFetchDna
 {
-    public function assignEndpoint()
-    {
-        if ($this->isEndPointOverWrite){
-            return;
-        }
-
-        if ($this instanceof HasFinalEndPoint) {
-            $this->endPoint = $this->setFinalEndPoint().$this->appendEndPoint;
-            return;
-        }
-
-        if ($this instanceof WithBaseUrl) {
-            $this->baseUrl = $this->setBaseUrl();
-        }
-
-        if ($this instanceof WithApiRoute) {
-            $this->apiRoute = $this->setApiRoute();
-        }
-
-        $this->endPoint = $this->baseUrl.$this->apiRoute.$this->appendEndPoint;
-    }
-
     public function send(): self
     {
         $this->assignEndpoint();
@@ -56,6 +32,28 @@ trait BaseFetchDna
         $this->responseHeaderHandler($headers);
         $this->accessLog($time, $statusCode);
         return $this;
+    }
+
+    public function assignEndpoint()
+    {
+        if ($this->isEndPointOverWrite) {
+            return;
+        }
+
+        if ($this instanceof HasFinalEndPoint) {
+            $this->endPoint = $this->setFinalEndPoint() . $this->appendEndPoint;
+            return;
+        }
+
+        if ($this instanceof WithBaseUrl) {
+            $this->baseUrl = $this->setBaseUrl();
+        }
+
+        if ($this instanceof WithApiRoute) {
+            $this->apiRoute = $this->setApiRoute();
+        }
+
+        $this->endPoint = $this->baseUrl . $this->apiRoute . $this->appendEndPoint;
     }
 
     /**
@@ -82,8 +80,8 @@ trait BaseFetchDna
         }
 
         $data = [
-           'headers' => $this->requestHeaders,
-           'json' => $this->payloads,
+            'headers' => $this->requestHeaders,
+            'json' => $this->payloads,
         ];
 
         if (empty($this->endPoint)) {
@@ -101,7 +99,7 @@ trait BaseFetchDna
         $responseHeader = '';
         $method = strtolower($method);
 
-        if (! in_array($method, ['post', 'put', 'delete','get', 'patch'])) {
+        if (!in_array($method, ['post', 'put', 'delete', 'get', 'patch'])) {
             throw new ResterApiException('Unknown HTTP method ' . $method);
         }
 
@@ -111,44 +109,12 @@ trait BaseFetchDna
             $responseHeader = $clientResponse->getHeaders();
             $content = $clientResponse->getBody()->getContents();
             $statusCode = $clientResponse->getStatusCode();
-        } catch (GuzzleException | Exception $e) {
+        } catch (GuzzleException|Exception $e) {
             $content = $e->getMessage() ?? 'Rester API unknown error.';
             $statusCode = $e->getCode() ?? 500;
         }
 
         return [$responseHeader, $content, $statusCode];
-    }
-
-    /**
-     * @param $time
-     * @param $statusCode
-     */
-    public function accessLog($time, $statusCode)
-    {
-        if (! $this->log) {
-            return;
-        }
-
-        if ($this instanceof WithLogStrategy) {
-            $this->logStrategy = $this->setLogStrategy();
-        }
-
-        if (! ($this instanceof WithLogStrategy) ) {
-            $this->logStrategy = new FileLog('logs/rester_api_logs.log');;
-        }
-
-        $this->loggable = [
-            'uri' => $this->endPoint,
-            'status_code' => $statusCode,
-            'request_at' => $time['start'],
-            'response_at' => $time['stop'],
-        ];
-
-        if ($this instanceof AccessLogInterceptor) {
-            $this->loggable = array_merge($this->interceptAccessLog(), $this->loggable);
-        }
-
-        $this->logStrategy->log($this->loggable);
     }
 
     /**
@@ -179,5 +145,37 @@ trait BaseFetchDna
                 $this->responseContent
             );
         }
+    }
+
+    /**
+     * @param $time
+     * @param $statusCode
+     */
+    public function accessLog($time, $statusCode)
+    {
+        if (!$this->log) {
+            return;
+        }
+
+        if ($this instanceof WithLogStrategy) {
+            $this->logStrategy = $this->setLogStrategy();
+        }
+
+        if (!($this instanceof WithLogStrategy)) {
+            $this->logStrategy = new FileLog('logs/rester_api_logs.log');
+        }
+
+        $this->loggable = [
+            'uri' => $this->endPoint,
+            'status_code' => $statusCode,
+            'request_at' => $time['start'],
+            'response_at' => $time['stop'],
+        ];
+
+        if ($this instanceof AccessLogInterceptor) {
+            $this->loggable = array_merge($this->interceptAccessLog(), $this->loggable);
+        }
+
+        $this->logStrategy->log($this->loggable);
     }
 }

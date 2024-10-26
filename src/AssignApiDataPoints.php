@@ -2,8 +2,6 @@
 
 namespace Itsmg\Rester;
 
-use Itsmg\Rester\Contracts\LogStrategy;
-
 trait AssignApiDataPoints
 {
     public function addPayloads(array $data = []): self
