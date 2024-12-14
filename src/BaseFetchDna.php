@@ -3,7 +3,6 @@
 namespace Itsmg\Rester;
 
 use Carbon\Carbon;
-use Exception;
 use GuzzleHttp\Client as GuzzleHttp;
 use GuzzleHttp\Exception\GuzzleException;
 use Itsmg\Rester\Contracts\AccessLogInterceptor;
@@ -21,6 +20,9 @@ use Itsmg\Rester\Exceptions\ResterApiException;
 
 trait BaseFetchDna
 {
+    /**
+     * @throws ResterApiException
+     */
     public function send(): self
     {
         $this->assignEndpoint();
@@ -34,7 +36,7 @@ trait BaseFetchDna
         return $this;
     }
 
-    public function assignEndpoint()
+    public function assignEndpoint(): void
     {
         if ($this->isEndPointOverWrite) {
             return;
@@ -109,7 +111,7 @@ trait BaseFetchDna
             $responseHeader = $clientResponse->getHeaders();
             $content = $clientResponse->getBody()->getContents();
             $statusCode = $clientResponse->getStatusCode();
-        } catch (GuzzleException|Exception $e) {
+        } catch (GuzzleException $e) {
             $content = $e->getMessage() ?? 'Rester API unknown error.';
             $statusCode = $e->getCode() ?? 500;
         }
@@ -151,7 +153,7 @@ trait BaseFetchDna
      * @param $time
      * @param $statusCode
      */
-    public function accessLog($time, $statusCode)
+    public function accessLog($time, $statusCode): void
     {
         if (!$this->log) {
             return;
@@ -159,9 +161,7 @@ trait BaseFetchDna
 
         if ($this instanceof WithLogStrategy) {
             $this->logStrategy = $this->setLogStrategy();
-        }
-
-        if (!($this instanceof WithLogStrategy)) {
+        } else {
             $this->logStrategy = new FileLog('logs/rester_api_logs.log');
         }
 
@@ -177,5 +177,6 @@ trait BaseFetchDna
         }
 
         $this->logStrategy->log($this->loggable);
+
     }
 }

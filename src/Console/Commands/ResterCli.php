@@ -46,7 +46,7 @@ EOT;
     {
         $groupName = $this->option('group');
         $className = $this->option('api-name');
-        $base = $this->option('base') ?? 'yes';
+        $base = $this->option('base-class') ?? 'yes';
 
         if (empty($groupName) || empty($className)) {
             $this->info($this->help);
@@ -60,7 +60,7 @@ EOT;
 
         $folderPath = app_path('Rester/' . $groupName);
         if (!File::exists($folderPath)) {
-            File::makeDirectory($folderPath, 0755, true);
+            File::makeDirectory($folderPath, 0777, true);
             $this->info("Created directory: {$folderPath}");
         } else {
             $this->info("Directory already exists: {$folderPath}");
@@ -101,6 +101,7 @@ EOT;
     private function getStandAloneTemplate($className, $group): string
     {
         $namespace = "App\Rester\\" . $group;
+
         return <<<EOT
         <?php
 
@@ -122,8 +123,8 @@ EOT;
     private function getTemplate($className, $group): string
     {
         $groupClassName = $group . 'Base';
-
         $namespace = "App\Rester\\" . $group;
+
         return <<<EOT
         <?php
 
@@ -138,6 +139,7 @@ EOT;
     private function getTemplateBase($className, $group): string
     {
         $namespace = "App\Rester\\" . $group;
+
         return <<<EOT
         <?php
 
@@ -150,7 +152,7 @@ EOT;
         {
             public function setBaseUrl(): string
             {
-                // TODO: Implement defaultBaseUri() method.
+                // TODO: Implement defaultBaseUrl() method.
             }
         }
         EOT;
