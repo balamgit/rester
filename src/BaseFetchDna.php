@@ -5,6 +5,7 @@ namespace Itsmg\Rester;
 use Carbon\Carbon;
 use GuzzleHttp\Client as GuzzleHttp;
 use GuzzleHttp\Exception\GuzzleException;
+use Itsmg\Rester\Constants\ContentType;
 use Itsmg\Rester\Contracts\AccessLogInterceptor;
 use Itsmg\Rester\Contracts\HasFinalEndPoint;
 use Itsmg\Rester\Contracts\PayloadInterceptor;
@@ -81,10 +82,9 @@ trait BaseFetchDna
             $this->payloads = $this->interceptPayload($this->payloads);
         }
 
-        $data = [
-            'headers' => $this->requestHeaders,
-            'json' => $this->payloads,
-        ];
+        $data = ['headers' => $this->requestHeaders];
+        $data[$this->contentType->value] = $this->buildPayload();
+
 
         if (empty($this->endPoint)) {
             throw new ResterApiException('Endpoint not set');
@@ -93,17 +93,27 @@ trait BaseFetchDna
         return $this->curlInit($this->endPoint, $data, $this->method);
     }
 
+    public function buildPayload(): array {
+        return match ($this->contentType) {
+            ContentType::JSON, ContentType::FORM_PARAMS, ContentType::BODY => $this->payloads,
+            ContentType::MULTIPART => $this->buildMultipart(),
+        };
+    }
+
+    private function buildMultipart(): array {
+        return array_map(fn($key, $value) => [
+            'name' => $key,
+            'contents' => $value,
+        ], array_keys($this->payloads), $this->payloads);
+    }
+
     /**
      * @throws ResterApiException
      */
-    protected function curlInit(string $endpoint, array $data, $method = 'post'): array
+    protected function curlInit(string $endpoint, array $data, $method): array
     {
         $responseHeader = '';
         $method = strtolower($method);
-
-        if (!in_array($method, ['post', 'put', 'delete', 'get', 'patch'])) {
-            throw new ResterApiException('Unknown HTTP method ' . $method);
-        }
 
         try {
             $client = new GuzzleHttp();
