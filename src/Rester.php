@@ -3,6 +3,8 @@
 namespace Itsmg\Rester;
 
 use BadMethodCallException;
+use Itsmg\Rester\Constants\AllowedMethod;
+use Itsmg\Rester\Constants\ContentType;
 use Itsmg\Rester\Contracts\LogStrategy;
 
 class Rester
@@ -19,13 +21,15 @@ class Rester
 
     protected string $apiRoute = '';
 
+    public ContentType $contentType = ContentType::JSON;
+
     protected $responseContent;
 
     protected ?int $responseStatusCode;
 
     protected $responseHeaders;
 
-    protected string $method = 'post';
+    protected AllowedMethod $method = AllowedMethod::POST;
 
     protected bool $log = false;
 
