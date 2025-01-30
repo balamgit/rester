@@ -1,5 +1,30 @@
 <?php
-
+/**
+ * RESTER - A PHP package for simplifying REST API interactions
+ *
+ * RESTER is a PHP package designed to simplify REST API interactions, providing a seamless and elegant way to handle API calls.
+ * Inspired by the Eloquent model approach, this package allows developers to define a model for each API call, mirroring the familiar structure of database models.
+ *
+ * Key Features:
+ * - Simplified API interaction with a model-based approach
+ * - Grouping of related API calls under a common parent class for enhanced code organization
+ * - Encapsulation of REST API logic into manageable models for easy integration of external services
+ * - Dynamic configuration of request headers, payload, and endpoint.
+ * - Custom logging strategies for API request/response data.
+ * - Interceptors for manipulating request and response data.
+ * - Support for multiple content types like JSON, form parameters, multipart, etc.
+ * - Easily manage API route and base URL.
+ *
+ * Author: BalaMurugan Periyasamy
+ * Date Created: 2025-01-31
+ * Version: 1.0.0
+ *
+ * License: MIT License
+ * See the full MIT License in the LICENSE file located in the root directory.
+ *
+ * @package Itsmg\Rester
+ * @version 1.0.6
+ */
 namespace Itsmg\Rester;
 
 use BadMethodCallException;
