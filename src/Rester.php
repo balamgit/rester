@@ -17,7 +17,6 @@
  *
  * Author: BalaMurugan Periyasamy
  * Date Created: 2025-01-31
- * Version: 1.0.0
  *
  * License: MIT License
  * See the full MIT License in the LICENSE file located in the root directory.
