@@ -7,7 +7,7 @@ use Itsmg\Rester\Console\Commands\ResterCli;
 
 class ResterServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         if ($this->app->runningInConsole()) {
             $this->commands([
@@ -16,7 +16,5 @@ class ResterServiceProvider extends ServiceProvider
         }
     }
 
-    public function register()
-    {
-    }
+    public function register(){}
 }
