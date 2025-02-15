@@ -92,7 +92,7 @@ class PayNowCreateOrder extends PaynowPaymentGatewayBase implements WithApiRoute
     public function defaultPayload(): array
     {
        return [ 
-         'user_id' => 'itsmg@1606',
+         'user_id' => 'itsbalamg-1606',
          'amount' => '1994.00,
          'currency' => 'USD',
        ];
@@ -137,7 +137,7 @@ You can easily customize payloads or headers dynamically during runtime. Here’
 ### Dynamically Adding Payloads
 
 ```php
-$response = PayNowCreateOrder::addPayloads(['secret-key' => 'xxxxxxx'])
+$response = PayNowCreateOrder::withPayload(['secret-key' => 'xxxxxxx'])
            ->send()
            ->get();
 ```
@@ -145,7 +145,7 @@ $response = PayNowCreateOrder::addPayloads(['secret-key' => 'xxxxxxx'])
 ### Dynamically Adding Headers
 
 ```php
-$response = PayNowCreateOrder::addHeaders(['Content-Type' => 'application/json'])
+$response = PayNowCreateOrder::withHeaders(['Content-Type' => 'application/json'])
            ->send()
            ->get();
 ```
